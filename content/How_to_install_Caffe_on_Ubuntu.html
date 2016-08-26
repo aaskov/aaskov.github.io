@@ -1,0 +1,109 @@
+meta = {
+'title': 'How to install Caffe on Ubuntu',
+'date': 'Aug. 26 2016'
+};
+content = """In this tutorial I will show you how to install the latest version of <a href="http://caffe.berkeleyvision.org/">Caffe</a> on Ubuntu, and show where to find the included image classification example.
+
+<notice>You can use Caffe for building and experimenting with state-of-the-art neural networks including ConvNets and LSTMs.</notice>
+
+<notice>If you are in a hurry, see my <a href="https://github.com/aaskov/6-steps-Caffe-install/blob/master/README.md">6-steps CPU-only installation</a> guide.</notice>
+
+When dealing with neural networks of any kind it is quickly benneficial to use a GPU for faster computation and training. Neural networks relies on matrix-vector multiplications which can be done much more effeciently on GPUs.</br></br>
+
+The reason why I mention this is because you have to decide how you are going to use Caffe before you install it. Make your desicion form this table:</br>
+
+<table style="width:100%">
+  <tr>
+    <th>Setup</th>
+    <th>OS</th>
+  </tr>
+  <tr>
+    <td>CPU only</td>
+    <td>Newer than Ubuntu 14.04. Recommended: Ubuntu 16.04.</td>
+  </tr>
+  <tr>
+    <td>With GPU support</td>
+    <td>No newer than Ubuntu 15.04</td>
+  </tr>
+</table> 
+
+Be aware that if you want to use Python with Caffe, you are restricted to Python 2.7.+. There is NO support for Python 3+.</br></br>
+
+First step is to download a local copy of the Caffe Github repository. Open a terminal and type,
+<pre>cd ~ && git clone https://github.com/BVLC/caffe.git</pre> 
+
+Next, we need to install the required dependencies.
+<pre>
+sudo apt-get install libprotobuf-dev libleveldb-dev libsnappy-dev libopencv-dev
+sudo apt-get install libhdf5-serial-dev protobuf-compiler
+sudo apt-get install --no-install-recommends libboost-all-dev libatlas-base-dev
+sudo apt-get install cmake libgflags-dev libgoogle-glog-dev liblmdb-dev
+sudo apt-get install python-protobuf
+sudo apt-get install build-essential python-dev
+</pre>
+
+If you do not want to use Caffe with a Python interface (known as PyCaffe) you can skip this step. however, I highly recommend you do this for later purposes. 
+
+<notice>Be aware that PyCaffe is only supported on Python 2.7.+</notice>
+
+<pre>
+cd ~/caffe/python/
+for req in $(cat requirements.txt); do sudo pip install $req; done
+sudo pip install sklearn
+</pre>
+
+Next we need to create the 'Makefile.config' used for Caffe's build process. The following command will make a copy of the Makefile example provided from the Caffe repository.
+<pre>cd ~/caffe && cp Makefile.config.example Makefile.config </pre>
+Now edit the Makefile using a text editor (e.g. 'gedit', 'nano', ...) and change the following lines
+<pre>gedit Makefile.config</pre>
+
+<table style="width:100%">
+	<tr>
+		<th>Line</th>
+		<th>Change from</th>
+		<th>Change to</th>
+	</tr>
+	<tr>
+		<th>8</th>
+		<th># CPU_ONLY := 1</th>
+		<th>CPU_ONLY := 1</th>
+	</tr>
+	<tr>
+		<th>90</th>
+		<th>INCLUDE_DIRS := $(PYTHON_INCLUDE) /usr/local/include</th>
+		<th>INCLUDE_DIRS := $(PYTHON_INCLUDE) /usr/local/include /usr/include/hdf5/serial/</th>
+	</tr>
+	<tr>
+		<th>91</th>
+		<th>LIBRARY_DIRS := $(PYTHON_LIB) /usr/local/lib /usr/lib</th>
+		<th>LIBRARY_DIRS := $(PYTHON_LIB) /usr/local/lib /usr/lib /usr/lib/x86_64-linux-gnu/hdf5/serial/</th>
+	</tr>
+</table>
+
+As you might have noticed we restrict Caffe to compile with CPU runtime only. If you want GPU support I highly recommend to start with a CPU-only configuration at first, to make sure everything works, and then afterwards switch to the GPU support.</br>
+
+<notice>For GPU support: You will additionally need to install NVIDIA drivers and CUDA packages. I will explain how in a re-edit of this tutorial.</notice>
+
+We are almost done. Next we need to create symbolic links used for the 'libhdf5' library. Be carefull with the version numbers as mine my be different than yours (use 'tab' when typing the following commands)
+<pre>cd /usr/lib/x86_64-linux-gnu
+sudo ln -s libhdf5_serial.so.10.0.2 libhdf5.so
+sudo ln -s libhdf5_serial_hl.so.10.0.2 libhdf5_hl.so</pre> 
+
+Finally we need to build Caffe as follows: You can speed up this process by changing '--job=2' to eg. '--jobs=4' if you have a quad-core processor.
+<pre>cd ~/caffe
+make clean
+make all --jobs=2
+make test --jobs=2
+make runtest --jobs=2
+make pycaffe
+</pre>
+You're done!</br>
+
+<h2>Example</h2>
+Use the included examples from Caffe to see it in action!
+<pre>cd ~/caffe
+ipython notebook
+</pre>
+Navigate to 'examples/00-classification.ipnyb' and see how you can use Caffe to solve an image classification task with ConvNets.
+If you found this tutoral helpfull, please star <a href="https://github.com/aaskov/6-steps-Caffe-install">my Github</a> page. Thanks!
+"""
